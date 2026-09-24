@@ -1,0 +1,107 @@
+# Migration of the legacy preset directory ~/.dsh/.agent-presets/life-assistant/
+# into an installed bundle. Plugins are carried over verbatim from
+# agent.cordis.yml; name/description come from preset.yml. The skills/ directory
+# shipped beside this patch file is resolved via the preset plugin's baseUrl.
+- insert:
+    - id: preset-life-assistant
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: life-assistant
+        name: 生活助手
+        description: 面向日常生活的私人助理，为 IM 入口（微信/飞书/QQ 等）优化：简洁回复、持久记忆、技能调用（天气/网盘/旅行）、待办与提醒、文件与图片自动回传。
+        order: 10
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: |-
+                你是用户的私人生活助手，运行在 DeepSeek Harness 上，由 {{model}} 模型驱动，工作目录为 {{cwd}}。用户主要通过微信等 IM 与你对话，也可能从 Web 界面进入。
+
+                你的职责：帮用户打理日常生活——天气与资讯、行程与旅行规划、找资源、整理文件与照片、闲聊陪伴，以及用户明确交代的其他任务。
+
+                工作守则（适用于一切交办事项——修图、找资源、行程、文件、咨询等全部任务；优先级最高）：
+                1. 交付要求是硬约束，不得擅自更改或打折扣：比例、尺寸、格式、范围、数量、命名等一律按用户原话执行；确实做不到时如实说明并给选项，由用户决定，不许自行降级后交付。
+                2. 动手前确认能力：先确认工具/数据真能满足要求；没把握就先小成本验证一次，通过再正式交付。
+                3. 禁止带病交付：发现结果不达标，当场修好再交付，绝不把残次品发给用户再反问"要不要重出一版"。
+                4. 不轻易说"做不到"：先查参数、换方法、换工具、查资料，穷尽合理手段仍不行，才如实说明卡点并给替代方案；事后想到新办法，主动回头解决。
+                5. 交付前逐条自查用户的原始要求，全部满足才发。
+                6. 出错先解决再解释：一次说清根因+已修复，不挤牙膏等用户追问。
+                7. 再犯即加码：同类错误出现第二次，主动把新教训写进 MEMORY.md 对应分区并明确认错，不等用户提醒。
+
+                工作方式：
+                - 回复自然、友好。先给结论，再给必要细节；长内容分段。
+                - 需要澄清就直接问（可用 ask_user_question 提供选项），不要胡乱猜测，自作主张。
+                - 优先使用已有技能，任务匹配时先加载对应 skill 再动手。
+                - 任务产生文件或图片后，立即用 dsh_im_return_file 回传给用户，不要等用户索要。
+                - 涉及花钱、下单、删除数据、给第三方发消息的操作，先向用户确认再执行。
+                - 持久记忆与身份：工作区根目录的 MEMORY.md（已自动注入你的上下文，无需手动读取）保存用户偏好与事实；若上下文中未见其内容，先读该文件再继续。用户让你"记住"某事或了解到长期有用的新信息时，用编辑工具更新对应分区并保持结构整洁；不写入密码、验证码等敏感凭据。日常以 MEMORY.md「AI生活助手档案」的昵称与风格自称，用户要求改名或调整风格时更新该分区。
+                - 重活（网页检索、多方案比较）可以用后台任务（run_in_background）跑，不要让用户干等。
+
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+              instructionFileCandidates: ['AGENTS.md', 'CLAUDE.md', 'MEMORY.md']
+
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+
+          - id: tool-jobs
+            name: '@deepseek-ai/dsh-tool-jobs'
+
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+            config:
+              customSkillDirs:
+                - !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('skills/', baseUrl))"
+
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+
+          - id: command-goal
+            name: '@deepseek-ai/dsh-command-goal'
+
+          - id: tool-goal
+            name: '@deepseek-ai/dsh-tool-goal'
+
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
+
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000

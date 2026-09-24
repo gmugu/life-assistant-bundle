@@ -1,0 +1,18 @@
+{
+  "deviceId": "4310d90c0edf0314240a8dc49c4c1838",
+  "platform": "ITX-N100-2L",
+  "currentUserId": "baba1e7f20ed4afa931cf87c13224d71",
+  "agent_auth": {
+    "deepseek": {
+      "userId": "baba1e7f20ed4afa931cf87c13224d71",
+      "login_time": 1789122555721
+    }
+  },
+  "baba1e7f20ed4afa931cf87c13224d71": {
+    "accessToken": "~1uLDmNp3oYj2d-zeLz93gpyCSyLpsSr4L2fDlBX9bznsvpzij2aOmuIvfSyVMQJ15ihG-tMtVF2q0VK_s5NpRraIbT2NcZyKJLGqfehy8eLXDz7H7H1sDdEeBP4AybsPD2ohzpHzEKEEd-XeNy-72H1fHaUOGtFm4WXLRRC4P1y-ZvEODCizfu401J0VvV1GyP6FJyjlskeTNgeaxh1OIhh425WN0DYHBMpuIPu8LIIuP8m_bR06SsrY38p41bLJpUPzPxyP18dwpr5OxFrN5GZI-dbWOXa6TZizGGF4U8Gqf-f9IX6GMP7Q7MshxSGdDm5w7qNjlTIj1IUF8eli_L9UsUlP-ChyxQF9VirMK1uzqbEEf1626UUokHGBkF2FbCJ6bcGFm9Vt6j19Q8fetbVShuwzs0d_oX4ZZuT8rZj0d6Y8pupUweuB9FDdqsxCMiQ9IjXGbkJv4bT6DN-K-e8xspsvW6ckwE4S5xcMszRKVnl7fybhD",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsIlR5cGUiOiJKd3QiLCJ0eXAiOiJKV1QifQ.eyJvcGVuSWQiOiJiYWJhMWU3ZjIwZWQ0YWZhOTMxY2Y4N2MxMzIyNGQ3MSIsImV4cCI6MTgwNDY3NDU1NSwidG9rZW4iOiI2YjI0NmQyNzhlYTE0NzgyODFjZTMzNDI4YmNjMWFlNiJ9.2GWnKbhAY-l_ayedUjTz0SWuf7gqZYCqvJYn04F_zN0",
+    "clientToken": "",
+    "userId": "baba1e7f20ed4afa931cf87c13224d71",
+    "update_time": 1789122555721
+  }
+}
