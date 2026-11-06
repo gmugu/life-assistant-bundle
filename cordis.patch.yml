@@ -1,7 +1,7 @@
 # Migration of the legacy preset directory ~/.dsh/.agent-presets/life-assistant/
 # into an installed bundle. Plugins are carried over verbatim from
 # agent.cordis.yml; name/description come from preset.yml. The skills/ directory
-# shipped beside this patch file is resolved via the preset plugin's baseUrl.
+# is resolved from the installed package (see skill-filesystem config below).
 - insert:
     - id: preset-life-assistant
       name: '@deepseek-ai/dsh-agent-preset'
@@ -15,7 +15,7 @@
             name: '@deepseek-ai/dsh-persona'
             config:
               prefix: |-
-                你是用户的私人生活助手，运行在 DeepSeek Harness 上，由 {{model}} 模型驱动，工作目录为 {{cwd}}。用户主要通过微信等 IM 与你对话，也可能从 Web 界面进入。
+                你是用户的私人生活助手，运行在 DeepSeek Harness 上，由 {{model}} 模型驱动。用户主要通过微信等 IM 与你对话，也可能从 Web 界面进入。
 
                 你的职责：帮用户打理日常生活——天气与资讯、行程与旅行规划、找资源、整理文件与照片、闲聊陪伴，以及用户明确交代的其他任务。
 
@@ -46,6 +46,10 @@
           - id: tool-bash
             name: '@deepseek-ai/dsh-tool-bash'
 
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+
           - id: tool-fs
             name: '@deepseek-ai/dsh-tool-fs'
 
@@ -61,7 +65,13 @@
             name: '@deepseek-ai/dsh-skill-filesystem'
             config:
               customSkillDirs:
-                - !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('skills/', baseUrl))"
+                # Official preset pattern: resolve the skills/ dir from the
+                # INSTALLED package, never from `baseUrl` — during preset
+                # mounting baseUrl points at the agent-preset registry's base,
+                # not this bundle, and a relative URL silently drops every skill.
+                # Resolve this bundle by package name from the profile loader
+                # root, where node_modules/@local/ holds the install symlink.
+                - !!js "process.getBuiltinModule('node:path').dirname(process.getBuiltinModule('node:module').createRequire(new URL('.', loader.ctx.baseUrl)).resolve('@local/dsh-life-assistant-preset/package.json')) + '/skills'"
 
           - id: tool-skill
             name: '@deepseek-ai/dsh-tool-skill'
@@ -92,6 +102,39 @@
                   headChars: 4096
                   tailChars: 1024
 
+          - id: delegation
+            name: cordis:group
+            group: true
+            isolate:
+              workflowEngine: true
+            config:
+              - id: tool-subagent-control
+                name: '@deepseek-ai/dsh-tool-subagent-control'
+              - id: tool-subagent
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: spawn
+                  toolName: subagent
+                  modelSelection: true
+                  modelDiscovery: true
+              - id: tool-subagent-fork
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: fork
+                  toolName: subagent_fork
+              - id: workflow-ptc
+                name: '@deepseek-ai/dsh-workflow-ptc'
+                config:
+                  provider: spawn
+              - id: tool-workflow
+                name: '@deepseek-ai/dsh-tool-workflow'
+              - id: tool-ralph
+                name: '@deepseek-ai/dsh-tool-ralph'
+                disabled: true
+                config:
+                  subagentProvider: spawn
+                  maxRounds: 64
+
           - id: tool-ask-user
             name: '@deepseek-ai/dsh-tool-ask-user'
 
@@ -105,3 +148,6 @@
             config:
               fetch: true
               searchTimeoutMs: 60000
+
+          - id: present
+            name: '@deepseek-ai/dsh-tool-present'
